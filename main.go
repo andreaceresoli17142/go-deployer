@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/go-git/go-git/v5"
 )
 
 type repo struct {
 	remote string
-	local  string `json:"local"`
+	Local  string `json:"local"`
 	branch string
 	hash   string
 }
@@ -28,6 +30,12 @@ func main() {
 		fmt.Printf("error unmarshaling json: %v\n", err)
 	}
 
+	// load the rest of the repository data
+	// code is scuffed, needs to be rewrtitten
+	repo, err := git.PlainOpen(repos[0].Local)
+
+	repoData, err := repo.Head()
+	fmt.Println(repoData.Hash())
 	// using polling look ar repo hashes to determine if they are up-to-date
 
 }
