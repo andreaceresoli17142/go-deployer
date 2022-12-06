@@ -1,5 +1,9 @@
 [
 	{
-		"local":"/home/andrea/Programs/go/go-deployer"
+		"job": 0,
+		"name":"RoGO",
+		"url": "https://github.com/Christian-Carminati/RoGo.git",
+		"remote": "origin",
+		"path": "/home/andrea/Programs/go/RoGo"
 	}
 ]
