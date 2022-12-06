@@ -1,41 +1,65 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/go-git/go-git/v5"
+	_ "github.com/go-git/go-git/v5/_examples"
 )
 
-type repo struct {
-	remote string
-	Local  string `json:"local"`
-	branch string
-	hash   string
-}
-
 func main() {
-	fmt.Println("application started")
+	path := os.Args[1]
 
-	// read json file
-	repofile, err := os.ReadFile("repos.json")
+	local, err := git.PlainOpen(path)
+
 	if err != nil {
-		fmt.Printf("error reading json file: %v\n", err)
+		fmt.Println(err)
 	}
 
-	// read all repositories from the json
-	var repos []repo
-	if err = json.Unmarshal(repofile, &repos); err != nil {
-		fmt.Printf("error unmarshaling json: %v\n", err)
+	localHead, err := local.Head()
+
+	if err != nil {
+		fmt.Println(err)
 	}
 
-	// load the rest of the repository data
-	// code is scuffed, needs to be rewrtitten
-	repo, err := git.PlainOpen(repos[0].Local)
+	remote, err := local.Remote("origin")
 
-	repoData, err := repo.Head()
-	fmt.Println(repoData.Hash())
-	// using polling look ar repo hashes to determine if they are up-to-date
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	references, err := remote.List(&git.ListOptions{})
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	found, behind := false, false
+	_ = found
+	_ = behind
+	for _, v := range references {
+		if v.Name() == localHead.Name() {
+			found = true
+			behind = v.Hash() == localHead.Hash()
+			break
+		}
+	}
+
+	if found && !behind {
+		fmt.Println("updating repository")
+		w, err := local.Worktree()
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = w.Pull(&git.PullOptions{RemoteName: "origin"})
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+	fmt.Println("repository already at latest change")
 }
