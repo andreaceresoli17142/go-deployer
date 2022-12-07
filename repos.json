@@ -2,9 +2,17 @@
 	{
 		"job": 0,
 		"name":"RoGo",
-		"url": "https://github.com/Christian-Carminati/RoGo.git",
+		"url": "git@github.com:Christian-Carminati/RoGo.git",
 		"remote": "origin",
 		"path": "/home/andrea/Programs/go/RoGo",
+		"force": false
+	},
+	{
+		"job": 0,
+		"name":"go-deployer",
+		"url": "git@github.com:andreaceresoli17142/go-deployer.git",
+		"remote": "origin",
+		"path": "/home/andrea/Programs/go/go-deployer",
 		"force": false
 	}
 ]
