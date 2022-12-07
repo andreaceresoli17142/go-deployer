@@ -14,5 +14,13 @@
 		"remote": "origin",
 		"path": "/home/andrea/Programs/go/go-deployer",
 		"force": false
+	},
+	{
+		"job": 0,
+		"name":"markdown-notes",
+		"url": "git@github.com:andreaceresoli17142/notes.git",
+		"remote": "origin",
+		"path": "/home/andrea/Documents/markdown",
+		"force": false
 	}
 ]
