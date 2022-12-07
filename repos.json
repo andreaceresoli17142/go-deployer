@@ -1,7 +1,7 @@
 [
 	{
 		"job": 0,
-		"name":"RoGO",
+		"name":"RoGo",
 		"url": "https://github.com/Christian-Carminati/RoGo.git",
 		"remote": "origin",
 		"path": "/home/andrea/Programs/go/RoGo",
