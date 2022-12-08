@@ -66,7 +66,7 @@ func main() {
 			return
 		}
 
-		fmt.Println(ssh.AuthMethod(publicKeys))
+		fmt.Println(ssh.AuthMethod(publicKeys).ClientConfig())
 	}
 
 	var repositories []Repository
