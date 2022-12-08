@@ -232,6 +232,8 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 		return
 	}
 
+	fmt.Printf("%s made it to here %d", name, 2)
+
 	w, err := local.Worktree()
 
 	if err != nil {
@@ -243,6 +245,8 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 	if err != nil {
 		return
 	}
+
+	fmt.Printf("%s made it to here %d", name, 4)
 
 	timeNow := time.Now()
 
@@ -256,6 +260,8 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 		return
 	}
 
+	fmt.Printf("%s made it to here %d", name, 6)
+
 	pushOpt := &git.PushOptions{Force: force}
 	if sshAuth != nil {
 		pushOpt.Auth = sshAuth
@@ -266,6 +272,8 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 	if err != nil {
 		return
 	}
+
+	fmt.Printf("%s made it to here %d", name, 7)
 
 	if !force {
 		notify(name + ": successfully pushed")
