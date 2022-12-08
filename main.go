@@ -249,6 +249,7 @@ func pushIfChanged(auth *http.BasicAuth, name string, path string, force bool) (
 	}
 
 	unstChange, err := hasUnstagedChages(local)
+	fmt.Println(unstChange)
 
 	if !unstChange || err != nil {
 		return
