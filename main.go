@@ -108,6 +108,7 @@ func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 	switch repo.Job {
 	case keepUpdated:
 		err = updateIfChanged(sshAuth, repo.Name, repo.Path, repo.Remote, repo.Force)
+		fmt.Printf("%s imean2 %v\n", repo.Name, err)
 		break
 	case keepPushing:
 		err = pushIfChanged(sshAuth, repo.Name, repo.Path, repo.Force)
