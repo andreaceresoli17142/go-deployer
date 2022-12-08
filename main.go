@@ -10,7 +10,7 @@ import (
 	"time"
 
 	git "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
 const (
@@ -44,61 +44,41 @@ func main() {
 	remoteName := os.Args[2]*/
 
 	//TODO: fix the use of ssh keys
-	/*
-		var publicKeys *ssh.PublicKeys
-		if len(os.Args) >= 2 {
-			privateKeyFile := os.Args[1]
-			var password string
+	var publicKeys *ssh.PublicKeys
+	if len(os.Args) >= 2 {
+		privateKeyFile := os.Args[1]
+		var password string
 
-			if len(os.Args) == 3 {
-				password = os.Args[2]
-			}
-
-			_, err := os.Stat(privateKeyFile)
-			if err != nil {
-				fmt.Printf("read file %s failed %s\n", privateKeyFile, err.Error())
-				return
-			}
-
-			publicKeys, err = ssh.NewPublicKeysFromFile("git", privateKeyFile, password)
-
-			if err != nil {
-				fmt.Printf("failed generating public-keys: %s\n", err.Error())
-				return
-			}
-
+		if len(os.Args) == 3 {
+			password = os.Args[2]
 		}
-	*/
 
-	tokenBytes, err := os.ReadFile(os.Args[1])
+		_, err := os.Stat(privateKeyFile)
+		if err != nil {
+			fmt.Printf("read file %s failed %s\n", privateKeyFile, err.Error())
+			return
+		}
 
-	if err != nil {
-		fmt.Println(err)
-		notify("error reading token:" + err.Error())
+		publicKeys, err = ssh.NewPublicKeysFromFile("git", privateKeyFile, password)
 
-		return
-	}
+		if err != nil {
+			fmt.Printf("generating publickeys failed: %s\n", err.Error())
+			return
+		}
 
-	token := string(tokenBytes)
-
-	auth := &http.BasicAuth{
-		Username: "abc123", // yes, this can be anything except an empty string
-		Password: token,
+		fmt.Println(ssh.AuthMethod(publicKeys).ClientConfig())
 	}
 
 	var repositories []Repository
 
 	if err := loadJson("repos.json", &repositories); err != nil {
 		fmt.Println(err)
-		notify("error reading json:" + err.Error())
-
-		return
 	}
 
 	//fmt.Println(repositories)
 
 	for _, v := range repositories {
-		go startPolling(v, auth)
+		go startPolling(v, publicKeys)
 	}
 
 	cancelChan := make(chan os.Signal, 1)
@@ -108,31 +88,31 @@ func main() {
 	fmt.Printf("caught: %v\nclosing up shop", sig)
 
 	for _, v := range repositories {
-		go execJob(v, auth)
+		go execJob(v, publicKeys)
 	}
 }
 
-func startPolling(repo Repository, auth *http.BasicAuth) {
+func startPolling(repo Repository, sshAuth *ssh.PublicKeys) {
 
 	if repo.Polling == 0 {
 		repo.Polling = defaultPolling
 	}
 
 	for {
-		execJob(repo, auth)
+		execJob(repo, sshAuth)
 		time.Sleep(time.Second * time.Duration(repo.Polling))
 	}
 }
 
-func execJob(repo Repository, auth *http.BasicAuth) {
+func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 	var err error
 
 	switch repo.Job {
 	case keepUpdated:
-		err = updateIfChanged(auth, repo.Name, repo.Path, repo.Remote, repo.Force)
+		err = updateIfChanged(sshAuth, repo.Name, repo.Path, repo.Remote, repo.Force)
 		break
 	case keepPushing:
-		err = pushIfChanged(auth, repo.Name, repo.Path, repo.Force)
+		err = pushIfChanged(sshAuth, repo.Name, repo.Path, repo.Force)
 		break
 	}
 	if err != nil {
@@ -157,7 +137,7 @@ func hasUnstagedChages(repo *git.Repository) (bool, error) {
 	return !s.IsClean(), nil
 }
 
-func updateIfChanged(auth *http.BasicAuth, name string, path string, remoteName string, force bool) (err error) {
+func updateIfChanged(sshAuth *ssh.PublicKeys, name string, path string, remoteName string, force bool) (err error) {
 
 	local, err := git.PlainOpen(path)
 
@@ -190,8 +170,8 @@ func updateIfChanged(auth *http.BasicAuth, name string, path string, remoteName 
 	}
 
 	listAuth := &git.ListOptions{}
-	if auth != nil {
-		listAuth.Auth = auth
+	if sshAuth != nil {
+		listAuth.Auth = sshAuth
 	}
 
 	references, err := remote.List(listAuth)
@@ -219,9 +199,9 @@ func updateIfChanged(auth *http.BasicAuth, name string, path string, remoteName 
 			return
 		}
 
-		pullAuth := &git.PullOptions{RemoteName: remoteName, Force: force, Progress: os.Stdout}
-		if auth != nil {
-			pullAuth.Auth = auth
+		pullAuth := &git.PullOptions{RemoteName: remoteName, Force: force}
+		if sshAuth != nil {
+			pullAuth.Auth = sshAuth
 		}
 
 		err = w.Pull(pullAuth)
@@ -240,7 +220,7 @@ func updateIfChanged(auth *http.BasicAuth, name string, path string, remoteName 
 	return
 }
 
-func pushIfChanged(auth *http.BasicAuth, name string, path string, force bool) (err error) {
+func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool) (err error) {
 
 	local, err := git.PlainOpen(path)
 
@@ -249,7 +229,6 @@ func pushIfChanged(auth *http.BasicAuth, name string, path string, force bool) (
 	}
 
 	unstChange, err := hasUnstagedChages(local)
-	fmt.Println(unstChange)
 
 	if !unstChange || err != nil {
 		return
@@ -279,9 +258,9 @@ func pushIfChanged(auth *http.BasicAuth, name string, path string, force bool) (
 		return
 	}
 
-	pushOpt := &git.PushOptions{Force: force, Progress: os.Stdout}
-	if auth != nil {
-		pushOpt.Auth = auth
+	pushOpt := &git.PushOptions{Force: force}
+	if sshAuth != nil {
+		pushOpt.Auth = sshAuth
 	}
 
 	err = local.Push(pushOpt)
