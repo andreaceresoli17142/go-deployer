@@ -62,7 +62,7 @@ func main() {
 		publicKeys, err = ssh.NewPublicKeysFromFile("git", privateKeyFile, password)
 
 		if err != nil {
-			fmt.Printf("generate publickeys failed: %s\n", err.Error())
+			fmt.Printf("failed generating public-keys: %s\n", err.Error())
 			return
 		}
 
@@ -199,7 +199,7 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, name string, path string, remoteNa
 			return
 		}
 
-		pullAuth := &git.PullOptions{RemoteName: remoteName, Force: force}
+		pullAuth := &git.PullOptions{RemoteName: remoteName, Force: force, Progress: os.Stdout}
 		if sshAuth != nil {
 			pullAuth.Auth = sshAuth
 		}
@@ -258,7 +258,7 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 		return
 	}
 
-	pushOpt := &git.PushOptions{Force: force}
+	pushOpt := &git.PushOptions{Force: force, Progress: os.Stdout}
 	if sshAuth != nil {
 		pushOpt.Auth = sshAuth
 	}
