@@ -64,6 +64,8 @@ func main() {
 			fmt.Printf("generate publickeys failed: %s\n", err.Error())
 			return
 		}
+
+		fmt.Println(publicKeys)
 	}
 
 	var repositories []Repository
