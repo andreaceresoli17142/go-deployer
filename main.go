@@ -111,6 +111,8 @@ func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 		break
 	case keepPushing:
 		err = pushIfChanged(sshAuth, repo.Name, repo.Path, repo.Force)
+		fmt.Printf("%s imean %v\n", repo.Name, err)
+
 		break
 	}
 	if err != nil {
