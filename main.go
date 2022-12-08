@@ -231,7 +231,7 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 	fmt.Printf("%s made it to here %d\n", name, 1)
 
 	if !unstChange || err != nil {
-		fmt.Printf("%s made it to here %s\n", name, err.Error())
+		fmt.Printf("%s made it to here %v\n", name, err)
 		return
 	}
 
