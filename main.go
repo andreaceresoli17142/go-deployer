@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -82,16 +81,12 @@ func main() {
 	cancelChan := make(chan os.Signal, 1)
 	// catch SIGETRM or SIGINTERRUPT
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
-	go func() {
-		// start your software here. Maybe your need to replace the for loop with other code
-		for {
-			// replace the time.Sleep with your code
-			log.Println("Loop tick")
-			time.Sleep(time.Second)
-		}
-	}()
 	sig := <-cancelChan
 	fmt.Printf("Caught SIGTERM %v", sig)
+
+	for _, v := range repositories {
+		go execJob(v, publicKeys)
+	}
 }
 
 func startPolling(repo Repository, sshAuth *ssh.PublicKeys) {
@@ -100,21 +95,25 @@ func startPolling(repo Repository, sshAuth *ssh.PublicKeys) {
 		repo.Polling = defaultPolling
 	}
 
+	for {
+		execJob(repo, sshAuth)
+		time.Sleep(time.Second * time.Duration(repo.Polling))
+	}
+}
+
+func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 	var err error
 
-	for {
-		switch repo.Job {
-		case keepUpdated:
-			err = updateIfChanged(sshAuth, repo.Name, repo.Path, repo.Remote, repo.Force)
-			break
-		case keepPushing:
-			err = pushIfChanged(sshAuth, repo.Name, repo.Path, repo.Force)
-			break
-		}
-		if err != nil {
-			notify(repo.Name + ": " + err.Error())
-		}
-		time.Sleep(time.Second * time.Duration(repo.Polling))
+	switch repo.Job {
+	case keepUpdated:
+		err = updateIfChanged(sshAuth, repo.Name, repo.Path, repo.Remote, repo.Force)
+		break
+	case keepPushing:
+		err = pushIfChanged(sshAuth, repo.Name, repo.Path, repo.Force)
+		break
+	}
+	if err != nil {
+		notify(repo.Name + ": " + err.Error())
 	}
 }
 
