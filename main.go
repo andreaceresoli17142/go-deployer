@@ -65,8 +65,6 @@ func main() {
 			fmt.Printf("generating publickeys failed: %s\n", err.Error())
 			return
 		}
-
-		fmt.Println(ssh.AuthMethod(publicKeys).ClientConfig())
 	}
 
 	var repositories []Repository
