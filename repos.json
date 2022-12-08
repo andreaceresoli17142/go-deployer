@@ -21,8 +21,7 @@
 		"url": "git@github.com:andreaceresoli17142/notes.git",
 		"remote": "origin",
 		"path": "/home/andrea/Documents/markdown",
-		"force": false,
-		"polling": 3600
+		"force": false
 	},
 	{
 		"job": 1,
@@ -30,7 +29,8 @@
 		"url": "git@github.com:andreaceresoli17142/notes.git",
 		"remote": "origin",
 		"path": "/home/andrea/Documents/markdown",
-		"force": false
+		"force": false,
+		"polling": 3600
 	},
 	{
 		"job": 1,
