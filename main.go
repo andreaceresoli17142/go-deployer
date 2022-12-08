@@ -116,7 +116,7 @@ func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 
 		break
 	}
-	if err != nil {
+	if err != nil && err != git.NoErrAlreadyUpToDate {
 		notify(repo.Name + ": " + err.Error())
 	}
 }
