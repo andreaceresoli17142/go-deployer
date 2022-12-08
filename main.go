@@ -3,8 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
+	"os/signal"
+	"syscall"
 	"time"
 
 	git "github.com/go-git/go-git/v5"
@@ -76,10 +79,19 @@ func main() {
 		go startPolling(v, publicKeys)
 	}
 
-	// this is just to stop the program from exiting after starting all the goroutines
-	for {
-		time.Sleep(time.Second * 10000)
-	}
+	cancelChan := make(chan os.Signal, 1)
+	// catch SIGETRM or SIGINTERRUPT
+	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
+	go func() {
+		// start your software here. Maybe your need to replace the for loop with other code
+		for {
+			// replace the time.Sleep with your code
+			log.Println("Loop tick")
+			time.Sleep(time.Second)
+		}
+	}()
+	sig := <-cancelChan
+	fmt.Printf("Caught SIGTERM %v", sig)
 }
 
 func startPolling(repo Repository, sshAuth *ssh.PublicKeys) {
