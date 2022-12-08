@@ -82,7 +82,7 @@ func main() {
 	// catch SIGETRM or SIGINTERRUPT
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
 	sig := <-cancelChan
-	fmt.Printf("Caught SIGTERM %v", sig)
+	fmt.Printf("caught: %v\n closing up shop", sig)
 
 	for _, v := range repositories {
 		go execJob(v, publicKeys)
