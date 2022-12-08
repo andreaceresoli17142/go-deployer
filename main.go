@@ -108,12 +108,9 @@ func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 	switch repo.Job {
 	case keepUpdated:
 		err = updateIfChanged(sshAuth, repo.Name, repo.Path, repo.Remote, repo.Force)
-		fmt.Printf("%s imean2 %v\n", repo.Name, err)
 		break
 	case keepPushing:
 		err = pushIfChanged(sshAuth, repo.Name, repo.Path, repo.Force)
-		fmt.Printf("%s imean %v\n", repo.Name, err)
-
 		break
 	}
 	if err != nil && err != git.NoErrAlreadyUpToDate {
@@ -231,14 +228,9 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 
 	unstChange, err := hasUnstagedChages(local)
 
-	fmt.Printf("%s made it to here %d\n", name, 1)
-
 	if !unstChange || err != nil {
-		fmt.Printf("%s made it to here %v\n", name, err)
 		return
 	}
-
-	fmt.Printf("%s made it to here %d\n", name, 2)
 
 	w, err := local.Worktree()
 
@@ -252,8 +244,6 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 		return
 	}
 
-	fmt.Printf("%s made it to here %d\n", name, 4)
-
 	timeNow := time.Now()
 
 	year, month, day := timeNow.Date()
@@ -266,8 +256,6 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 		return
 	}
 
-	fmt.Printf("%s made it to here %d\n", name, 6)
-
 	pushOpt := &git.PushOptions{Force: force}
 	if sshAuth != nil {
 		pushOpt.Auth = sshAuth
@@ -278,8 +266,6 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 	if err != nil {
 		return
 	}
-
-	fmt.Printf("%s made it to here %d\n", name, 7)
 
 	if !force {
 		notify(name + ": successfully pushed")
