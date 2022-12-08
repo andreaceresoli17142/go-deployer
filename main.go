@@ -60,12 +60,13 @@ func main() {
 		}
 
 		publicKeys, err = ssh.NewPublicKeysFromFile("git", privateKeyFile, password)
+
 		if err != nil {
 			fmt.Printf("generate publickeys failed: %s\n", err.Error())
 			return
 		}
 
-		fmt.Println(publicKeys)
+		fmt.Println(ssh.AuthMethod(publicKeys))
 	}
 
 	var repositories []Repository
