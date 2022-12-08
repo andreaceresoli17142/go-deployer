@@ -234,11 +234,11 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 
 	timeNow := time.Now()
 
-	day, month, year := timeNow.Date()
+	year, month, day := timeNow.Date()
 
 	hour, minutes := timeNow.Hour(), timeNow.Minute()
 
-	_, err = w.Commit(fmt.Sprintf("go-deployer automated commit: %d/%d/%d %d:%d", day, month, year, hour, minutes), &git.CommitOptions{})
+	_, err = w.Commit(fmt.Sprintf("go-deployer auto-commit: %d/%d/%d %d:%d", day, month, year, hour, minutes), &git.CommitOptions{})
 
 	if err != nil {
 		return
