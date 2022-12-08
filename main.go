@@ -42,31 +42,28 @@ func main() {
 	remoteName := os.Args[2]*/
 
 	//TODO: fix the use of ssh keys
-	/*
-		var publicKeys *ssh.PublicKeys
-			if len(os.Args) >= 4 {
-				privateKeyFile := os.Args[3]
-				var password string
+	var publicKeys *ssh.PublicKeys
+	if len(os.Args) >= 2 {
+		privateKeyFile := os.Args[1]
+		var password string
 
-				if len(os.Args) == 5 {
-					password = os.Args[4]
-				}
+		if len(os.Args) == 3 {
+			password = os.Args[2]
+		}
 
-				_, err := os.Stat(privateKeyFile)
-				if err != nil {
-					fmt.Println("read file %s failed %s\n", privateKeyFile, err.Error())
-					return
-				}
+		_, err := os.Stat(privateKeyFile)
+		if err != nil {
+			fmt.Printf("read file %s failed %s\n", privateKeyFile, err.Error())
+			return
+		}
 
-				// Clone the given repository to the given directory
-				publicKeys, err = ssh.NewPublicKeysFromFile("git", privateKeyFile, password)
-				if err != nil {
-					fmt.Println("generate publickeys failed: %s\n", err.Error())
-					return
-				}
-				fmt.Println(publicKeys)
-			}
-	*/
+		publicKeys, err = ssh.NewPublicKeysFromFile("git", privateKeyFile, password)
+		if err != nil {
+			fmt.Printf("generate publickeys failed: %s\n", err.Error())
+			return
+		}
+		fmt.Println(publicKeys)
+	}
 
 	var repositories []Repository
 
@@ -77,31 +74,54 @@ func main() {
 	//fmt.Println(repositories)
 
 	for _, v := range repositories {
-		go startPolling(v)
+		go startPolling(v, publicKeys)
 	}
 
-	// this is just to sto the program from exiting after starting all the goroutines
+	// this is just to stop the program from exiting after starting all the goroutines
 	for {
 		time.Sleep(time.Second * 10000)
 	}
 }
 
-func startPolling(repo Repository) {
+func startPolling(repo Repository, sshAuth *ssh.PublicKeys) {
 
 	if repo.Polling == 0 {
 		repo.Polling = defaultPolling
 	}
 
+	var err error
+
 	for {
-		time.Sleep(time.Second * time.Duration(repo.Polling))
 		switch repo.Job {
 		case keepUpdated:
-			err := updateIfChanged(nil, repo.Name, repo.Path, repo.Remote, repo.Force)
-			if err != nil {
-				notify(repo.Name + ": " + err.Error())
-			}
+			err = updateIfChanged(sshAuth, repo.Name, repo.Path, repo.Remote, repo.Force)
+			break
+		case keepPushing:
+			err = pushIfChanged(sshAuth, repo.Name, repo.Path, repo.Force)
+			break
 		}
+		if err != nil {
+			notify(repo.Name + ": " + err.Error())
+		}
+		time.Sleep(time.Second * time.Duration(repo.Polling))
 	}
+}
+
+func hasUnstagedChages(repo *git.Repository) (bool, error) {
+
+	w, err := repo.Worktree()
+
+	if err != nil {
+		return false, err
+	}
+
+	s, err := w.Status()
+
+	if err != nil {
+		return false, err
+	}
+
+	return !s.IsClean(), nil
 }
 
 func updateIfChanged(sshAuth *ssh.PublicKeys, name string, path string, remoteName string, force bool) (err error) {
@@ -113,22 +133,13 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, name string, path string, remoteNa
 	}
 
 	if !force {
-		var w *git.Worktree
-		var s git.Status
-
-		w, err = local.Worktree()
-
+		var unstChanges bool
+		unstChanges, err = hasUnstagedChages(local)
 		if err != nil {
 			return
 		}
 
-		s, err = w.Status()
-
-		if err != nil {
-			return
-		}
-
-		if !s.IsClean() {
+		if unstChanges {
 			return
 		}
 	}
@@ -187,11 +198,65 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, name string, path string, remoteNa
 		}
 
 		if !force {
-			notify(name + ": successfully updated")
+			notify(name + ": successfully pulled")
 		}
 
 		return
 	}
+
+	return
+}
+
+func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool) (err error) {
+	notify(name + ": started pushing")
+
+	local, err := git.PlainOpen(path)
+
+	if err != nil {
+		return
+	}
+
+	unstChange, err := hasUnstagedChages(local)
+
+	if !unstChange || err != nil {
+		return
+	}
+
+	w, err := local.Worktree()
+
+	if err != nil {
+		return
+	}
+
+	err = w.AddWithOptions(&git.AddOptions{All: true})
+
+	if err != nil {
+		return
+	}
+
+	day, month, year := time.Now().Date()
+
+	_, err = w.Commit(fmt.Sprintf("automated commit: %d/%v/%d", day, month, year), &git.CommitOptions{})
+
+	if err != nil {
+		return
+	}
+
+	pushOpt := &git.PushOptions{Force: force}
+	if sshAuth != nil {
+		pushOpt.Auth = sshAuth
+	}
+
+	err = local.Push(pushOpt)
+
+	if err != nil {
+		return
+	}
+
+	if !force {
+		notify(name + ": successfully pushed")
+	}
+	notify(name + ": successfully pushed")
 
 	return
 }

@@ -22,5 +22,13 @@
 		"remote": "origin",
 		"path": "/home/andrea/Documents/markdown",
 		"force": false
+	},
+	{
+		"job": 1,
+		"name":"go-deployer",
+		"url": "git@github.com:andreaceresoli17142/go-deployer.git",
+		"remote": "origin",
+		"path": "/home/andrea/Programs/go/go-deployer",
+		"force": false
 	}
 ]
