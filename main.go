@@ -208,7 +208,6 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, name string, path string, remoteNa
 }
 
 func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool) (err error) {
-	notify(name + ": started pushing")
 
 	local, err := git.PlainOpen(path)
 
@@ -256,7 +255,6 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 	if !force {
 		notify(name + ": successfully pushed")
 	}
-	notify(name + ": successfully pushed")
 
 	return
 }

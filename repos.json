@@ -29,6 +29,7 @@
 		"url": "git@github.com:andreaceresoli17142/go-deployer.git",
 		"remote": "origin",
 		"path": "/home/andrea/Programs/go/go-deployer",
-		"force": false
+		"force": false,
+		"polling": 350
 	}
 ]
