@@ -224,6 +224,8 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 
 	unstChange, err := hasUnstagedChages(local)
 
+	fmt.Println("a: ", unstChange)
+
 	if !unstChange || err != nil {
 		return
 	}
