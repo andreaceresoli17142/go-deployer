@@ -82,8 +82,10 @@ func main() {
 	fmt.Printf("caught: %v\nclosing up shop", sig)
 
 	for _, v := range repositories {
-		go execJob(v, publicKeys)
+		execJob(v, publicKeys)
 	}
+
+	fmt.Println("finished last tasks")
 }
 
 func startPolling(repo Repository, sshAuth *ssh.PublicKeys) {
