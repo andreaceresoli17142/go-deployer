@@ -40,10 +40,6 @@ func notify(s string) {
 
 func main() {
 
-	/*path := os.Args[1]
-	remoteName := os.Args[2]*/
-
-	//TODO: fix the use of ssh keys
 	var publicKeys *ssh.PublicKeys
 	if len(os.Args) >= 2 {
 		privateKeyFile := os.Args[1]
