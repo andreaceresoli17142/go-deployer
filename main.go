@@ -236,7 +236,13 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 		return
 	}
 
-	_, err = w.Add(".")
+	// currently broken
+	//_, err = w.Add(".")
+
+	// awful fix
+	cmd := exec.Command("git", "add", ".")
+	cmd.Dir = w.Filesystem.Root()
+	err = cmd.Run()
 
 	if err != nil {
 		return
