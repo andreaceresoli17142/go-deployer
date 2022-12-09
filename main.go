@@ -236,7 +236,7 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 		return
 	}
 
-	err = w.AddWithOptions(&git.AddOptions{All: true, Glob: "."})
+	err = w.AddWithOptions(&git.AddOptions{All: true, Path: "."})
 
 	if err != nil {
 		return
