@@ -78,7 +78,7 @@ func main() {
 
 	cancelChan := make(chan os.Signal, 1)
 	// catch SIGETRM or SIGINTERRUPT
-	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
+	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	sig := <- cancelChan
 	fmt.Printf("caught: %v\nclosing up shop", sig)
 
