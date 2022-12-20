@@ -32,6 +32,7 @@ type Repository struct {
 	Path    string  `json:"path"`
 	Polling int     `json:"polling"`
 	Force   bool    `json:"force"`
+   Script  string  `json:"script"`
 }
 
 func notify(s string) {
@@ -78,7 +79,7 @@ func main() {
 	cancelChan := make(chan os.Signal, 1)
 	// catch SIGETRM or SIGINTERRUPT
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
-	sig := <-cancelChan
+	sig := <- cancelChan
 	fmt.Printf("caught: %v\nclosing up shop", sig)
 
 	for _, v := range repositories {
@@ -105,10 +106,10 @@ func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 
 	switch repo.Job {
 	case keepUpdated:
-		err = updateIfChanged(sshAuth, repo.Name, repo.Path, repo.Remote, repo.Force)
+		err = updateIfChanged(sshAuth, repo)
 		break
 	case keepPushing:
-		err = pushIfChanged(sshAuth, repo.Name, repo.Path, repo.Force)
+		err = pushIfChanged(sshAuth, repo)
 		break
 	}
 	if err != nil && err != git.NoErrAlreadyUpToDate {
@@ -133,7 +134,13 @@ func hasUnstagedChages(repo *git.Repository) (bool, error) {
 	return !s.IsClean(), nil
 }
 
-func updateIfChanged(sshAuth *ssh.PublicKeys, name string, path string, remoteName string, force bool) (err error) {
+func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
+
+   name := repo.Name
+   path := repo.Path 
+   remoteName := repo.Remote 
+   force := repo.Force
+   script := repo.Script
 
 	local, err := git.PlainOpen(path)
 
@@ -210,13 +217,21 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, name string, path string, remoteNa
 			notify(name + ": successfully pulled")
 		}
 
+      cmd := exec.Command("sh", script )
+      cmd.Run()
+
 		return
 	}
 
 	return
 }
 
-func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool) (err error) {
+func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
+
+   name := repo.Name 
+   path := repo.Path 
+   force := repo.Force 
+   script := repo.Script
 
 	local, err := git.PlainOpen(path)
 
@@ -275,7 +290,10 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, name string, path string, force bool
 		notify(name + ": successfully pushed")
 	}
 
-	return
+   cmd = exec.Command("sh", script )
+   cmd.Run()
+
+   return
 }
 
 func loadJson[T any](FileName string, inp T) error {
