@@ -217,10 +217,12 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 			notify(name + ": successfully pulled")
 		}
 
-      cmd := exec.Command("sh", script )
-      cmd.Run()
-
-		return
+      if script != "" {
+         cmd := exec.Command("sh", script )
+         cmd.Run()
+      }
+      
+      return
 	}
 
 	return
@@ -290,9 +292,11 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 		notify(name + ": successfully pushed")
 	}
 
-   cmd = exec.Command("sh", script )
-   cmd.Run()
-
+   if script != "" {
+      cmd := exec.Command("sh", script )
+      cmd.Run()
+   } 
+   
    return
 }
 
