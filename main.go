@@ -33,6 +33,9 @@ func notify(s string) {
 }
 
 func main() {
+   cmd := exec.Command("sh", "scriptTest.sh" )
+   err := cmd.Run()
+   fmt.Println(err)
 
 	var publicKeys *ssh.PublicKeys
 	if len(os.Args) >= 2 {
@@ -210,7 +213,11 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 
       if script != "" {
          cmd := exec.Command("sh", script )
-         cmd.Run()
+         err = cmd.Run()
+         fmt.Println(err)
+         if err != nil {
+		      return
+	      }
       }
       
       return
