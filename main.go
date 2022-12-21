@@ -217,7 +217,6 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
       
       return
 	}
-
 	return
 }
 
