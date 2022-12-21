@@ -231,6 +231,8 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
    force := repo.Force 
    script := repo.Script
 
+   fmt.Println(script)
+
 	local, err := git.PlainOpen(path)
 
 	if err != nil {
