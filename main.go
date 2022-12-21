@@ -33,7 +33,7 @@ func notify(s string) {
 }
 
 func main() {
-   cmd := exec.Command("sh", "scriptTest.sh" )
+   cmd := exec.Command("sh", "striptTest.sh" )
    err := cmd.Run()
    fmt.Println(err)
 
