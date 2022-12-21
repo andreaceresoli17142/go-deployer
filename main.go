@@ -17,15 +17,8 @@ const (
 	defaultPolling = 10 // 10 sec polling
 )
 
-type JobType int
-
-const (
-	keepUpdated JobType = iota
-	keepPushing JobType = iota
-)
-
 type Repository struct {
-	Job     JobType `json:"job"`
+	Job     string`json:"job"`
 	Name    string  `json:"name"`
 	Url     string  `json:"url"`
 	Remote  string  `json:"remote"`
@@ -105,10 +98,10 @@ func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 	var err error
 
 	switch repo.Job {
-	case keepUpdated:
+	case "pull":
 		err = updateIfChanged(sshAuth, repo)
 		break
-	case keepPushing:
+	case "push":
 		err = pushIfChanged(sshAuth, repo)
 		break
 	}
