@@ -224,14 +224,10 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 
 func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 
-   fmt.Println(repo)
-
    name := repo.Name 
    path := repo.Path 
    force := repo.Force 
    script := repo.Script
-
-   fmt.Println(script)
 
 	local, err := git.PlainOpen(path)
 
