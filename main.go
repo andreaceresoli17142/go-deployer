@@ -211,6 +211,7 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
          cmd := exec.Command("sh", script )
          err = cmd.Run()
          if err != nil {
+            err = fmt.Errorf("executing script returned ad error, %e", err)
 		      return
 	      }
       }
@@ -287,6 +288,7 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
       cmd := exec.Command("sh", script )
       err = cmd.Run()
       if err != nil {
+         err = fmt.Errorf("executing script returned ad error, %e", err)
 		   return
 	   }  
    } 
