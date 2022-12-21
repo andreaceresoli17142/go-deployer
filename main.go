@@ -113,13 +113,11 @@ func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 func hasUnstagedChages(repo *git.Repository) (bool, error) {
 
 	w, err := repo.Worktree()
-
 	if err != nil {
 		return false, err
 	}
 
 	s, err := w.Status()
-
 	if err != nil {
 		return false, err
 	}
