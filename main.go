@@ -35,7 +35,7 @@ func notify(s string) {
 func main() {
    cmd := exec.Command("sh", "striptTest.sh" )
    err := cmd.Run()
-   fmt.Println(err)
+   fmt.Println("cooose:",err)
 
 	var publicKeys *ssh.PublicKeys
 	if len(os.Args) >= 2 {
