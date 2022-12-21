@@ -284,7 +284,10 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 
    if script != "" {
       cmd := exec.Command("sh", script )
-      cmd.Run()
+      err = cmd.Run()
+      if err != nil {
+		   return
+	   }  
    } 
    
    return
