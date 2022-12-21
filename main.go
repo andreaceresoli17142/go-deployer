@@ -33,10 +33,6 @@ func notify(s string) {
 }
 
 func main() {
-   cmd := exec.Command("sh", "striptTest.sh" )
-   err := cmd.Run()
-   fmt.Println("cooose:",err)
-
 	var publicKeys *ssh.PublicKeys
 	if len(os.Args) >= 2 {
 		privateKeyFile := os.Args[1]
@@ -227,6 +223,8 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 }
 
 func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
+
+   fmt.Println(repo)
 
    name := repo.Name 
    path := repo.Path 
