@@ -63,8 +63,6 @@ func main() {
 		fmt.Println(err)
 	}
 
-	//fmt.Println(repositories)
-
 	for _, v := range repositories {
 		go startPolling(v, publicKeys)
 	}
