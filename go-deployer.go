@@ -18,7 +18,7 @@ const (
 )
 
 type Repository struct {
-	Job     string  `json:"job"`
+	Job     string`json:"job"`
 	Name    string  `json:"name"`
 	Url     string  `json:"url"`
 	Remote  string  `json:"remote"`
