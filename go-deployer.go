@@ -197,6 +197,10 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 			return
 		}
 
+    if force {
+      w.Reset( &git.ResetOptions{Mode: git.HardReset, Commit: localHead.Hash()} )
+    }
+
 		pullAuth := &git.PullOptions{RemoteName: remoteName, Force: force}
 		if sshAuth != nil {
 			pullAuth.Auth = sshAuth
