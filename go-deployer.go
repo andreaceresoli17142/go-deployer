@@ -125,8 +125,6 @@ func hasUnstagedChages(repo *git.Repository) (bool, error) {
 
 func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 
-  fmt.Println("job:",repo)
-
    name := repo.Name
    path := repo.Path 
    remoteName := repo.Remote 
@@ -178,11 +176,9 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 	_ = found
 	_ = behind
 	for _, v := range references {
-    fmt.Println(v.Name(), "==", localHead.Name())
 		if v.Name() == localHead.Name() {
 			found = true
 			behind = v.Hash() != localHead.Hash()
-      fmt.Println(v.Hash(), "!=", localHead.Hash())
 			break
 		}
 	}
