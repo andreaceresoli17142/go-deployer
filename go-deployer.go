@@ -30,6 +30,7 @@ type Repository struct {
 
 func notify(s string) {
 	exec.Command("notify-send", s).Run()
+  fmt.Println(s)
 }
 
 func main() {
@@ -104,7 +105,7 @@ func execJob(repo Repository, sshAuth *ssh.PublicKeys) {
 		err = pushIfChanged(sshAuth, repo)
 		break
 	}
-	if err != nil && err != git.NoErrAlreadyUpToDate {
+	if err != nil {
 		notify(repo.Name + ": " + err.Error())
 	}
 }
@@ -125,6 +126,8 @@ func hasUnstagedChages(repo *git.Repository) (bool, error) {
 }
 
 func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
+
+  fmt.Println("job:",repo)
 
    name := repo.Name
    path := repo.Path 
@@ -177,14 +180,16 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 	_ = found
 	_ = behind
 	for _, v := range references {
+    fmt.Println(v.Name(), "==", localHead.Name())
 		if v.Name() == localHead.Name() {
 			found = true
-			behind = v.Hash() == localHead.Hash()
+			behind = v.Hash() != localHead.Hash()
+      fmt.Println(v.Hash(), "!=", localHead.Hash())
 			break
 		}
 	}
 
-	if found && !behind {
+	if found && behind {
 		var w *git.Worktree
 		w, err = local.Worktree()
 
@@ -218,7 +223,7 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
       }
     }
       
-      return
+    return
 	}
 	return
 }
