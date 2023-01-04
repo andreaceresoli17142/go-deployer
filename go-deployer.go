@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultPolling = 10 // 10 sec polling
+	defaultPolling = 10 // default 10 sec polling
 )
 
 type Repository struct {
@@ -172,7 +172,7 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 		return
 	}
 
-	found, behind := false, false
+	found, behind := false, false 
 	_ = found
 	_ = behind
 	for _, v := range references {
