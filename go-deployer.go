@@ -217,7 +217,7 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
     fmt.Println("sc:", script)
 
     if script != "" {
-      cmd := exec.Command("eval", script )
+      cmd := exec.Command("sh", script )
       err = cmd.Run()
       if err != nil {
         err = fmt.Errorf("executing script returned an error, %s", err.Error())
