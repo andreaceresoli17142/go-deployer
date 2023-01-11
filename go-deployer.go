@@ -1,5 +1,5 @@
 package main
-
+a
 import (
 	"encoding/json"
 	"fmt"
