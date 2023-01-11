@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
@@ -18,48 +19,67 @@ const (
 )
 
 type Repository struct {
-	Job     string`json:"job"`
-	Name    string  `json:"name"`
-	Url     string  `json:"url"`
-	Remote  string  `json:"remote"`
-	Path    string  `json:"path"`
-	Polling int     `json:"polling"`
-	Force   bool    `json:"force"`
-  Script  string  `json:"script"`
+	Job     string `json:"job"`
+	Name    string `json:"name"`
+	Url     string `json:"url"`
+	Remote  string `json:"remote"`
+	Path    string `json:"path"`
+	Polling int    `json:"polling"`
+	Force   bool   `json:"force"`
+	Script  string `json:"script"`
+}
+
+type TomlData struct {
+	RepoConfig string `toml:"repoconfig"`
+	SshKey     string `toml:"sshkey"`
+	SshPw      string `toml:"sshpw"`
 }
 
 func notify(s string) {
 	exec.Command("notify-send", s).Run()
-  fmt.Println(s)
+	fmt.Println(s)
 }
 
 func main() {
+
+	var configFile = "config.toml"
+
+	if len(os.Args) == 2 {
+		configFile = os.Args[1]
+	}
+
+	var config TomlData
+	_, err := toml.DecodeFile(configFile, &config)
+	if err != nil {
+		fmt.Println("Error reading config file:", err.Error())
+      os.Exit(1)
+	}
+
 	var publicKeys *ssh.PublicKeys
-	if len(os.Args) >= 2 {
-		privateKeyFile := os.Args[1]
-		var password string
+	privateKeyFile := config.SshKey
+	password := config.SshPw
+	repoConfig := config.RepoConfig
 
-		if len(os.Args) == 3 {
-			password = os.Args[2]
-		}
+	if repoConfig == "" {
+		repoConfig = "repos.json"
+	}
 
-		_, err := os.Stat(privateKeyFile)
-		if err != nil {
-			fmt.Printf("read file %s failed %s\n", privateKeyFile, err.Error())
-			return
-		}
+	_, err = os.Stat(privateKeyFile)
+	if err != nil {
+      fmt.Printf("Error reading file \"%s\": %s\n", privateKeyFile, err.Error())
+      os.Exit(1)
+	}
 
-		publicKeys, err = ssh.NewPublicKeysFromFile("git", privateKeyFile, password)
+	publicKeys, err = ssh.NewPublicKeysFromFile("git", privateKeyFile, password)
 
-		if err != nil {
-			fmt.Printf("generating publickeys failed: %s\n", err.Error())
-			return
-		}
+	if err != nil {
+		fmt.Printf("Error generating publickeys: %s\n", err.Error())
+      os.Exit(1)
 	}
 
 	var repositories []Repository
 
-	if err := loadJson("repos.json", &repositories); err != nil {
+	if err := loadJson(repoConfig, &repositories); err != nil {
 		fmt.Println(err)
 	}
 
@@ -70,7 +90,7 @@ func main() {
 	cancelChan := make(chan os.Signal, 1)
 	// catch SIGETRM or SIGINTERRUPT
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
-	sig := <- cancelChan
+	sig := <-cancelChan
 	fmt.Printf("caught: %v\nclosing up shop", sig)
 
 	for _, v := range repositories {
@@ -123,13 +143,13 @@ func hasUnstagedChages(repo *git.Repository) (bool, error) {
 	return !s.IsClean(), nil
 }
 
-func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
+func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository) (err error) {
 
-   name := repo.Name
-   path := repo.Path 
-   remoteName := repo.Remote 
-   force := repo.Force
-   script := repo.Script
+	name := repo.Name
+	path := repo.Path
+	remoteName := repo.Remote
+	force := repo.Force
+	script := repo.Script
 
 	local, err := git.PlainOpen(path)
 
@@ -172,7 +192,7 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 		return
 	}
 
-	found, behind := false, false 
+	found, behind := false, false
 	_ = found
 	_ = behind
 	for _, v := range references {
@@ -191,9 +211,9 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 			return
 		}
 
-    if force {
-      w.Reset( &git.ResetOptions{Mode: git.HardReset, Commit: localHead.Hash()} )
-    }
+		if force {
+			w.Reset(&git.ResetOptions{Mode: git.HardReset, Commit: localHead.Hash()})
+		}
 
 		pullAuth := &git.PullOptions{RemoteName: remoteName, Force: force}
 		if sshAuth != nil {
@@ -210,26 +230,26 @@ func updateIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 			notify(name + ": successfully pulled")
 		}
 
-    if script != "" {
-      cmd := exec.Command("sh", script )
-      err = cmd.Run()
-      if err != nil {
-        err = fmt.Errorf("executing script returned an error, %s", err.Error())
-        return
-      }
-    }
-      
-    return
+		if script != "" {
+			cmd := exec.Command("sh", script)
+			err = cmd.Run()
+			if err != nil {
+				err = fmt.Errorf("executing script returned an error, %s", err.Error())
+				return
+			}
+		}
+
+		return
 	}
 	return
 }
 
-func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
+func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository) (err error) {
 
-   name := repo.Name 
-   path := repo.Path 
-   force := repo.Force 
-   script := repo.Script
+	name := repo.Name
+	path := repo.Path
+	force := repo.Force
+	script := repo.Script
 
 	local, err := git.PlainOpen(path)
 
@@ -287,16 +307,16 @@ func pushIfChanged(sshAuth *ssh.PublicKeys, repo Repository ) (err error) {
 		notify(name + ": successfully pushed")
 	}
 
-   if script != "" {
-      cmd := exec.Command("sh", script )
-      err = cmd.Run()
-      if err != nil {
-         err = fmt.Errorf("executing script returned an error, %s", err.Error())
-		   return
-	   }  
-   } 
-   
-   return
+	if script != "" {
+		cmd := exec.Command("sh", script)
+		err = cmd.Run()
+		if err != nil {
+			err = fmt.Errorf("executing script returned an error, %s", err.Error())
+			return
+		}
+	}
+
+	return
 }
 
 func loadJson[T any](FileName string, inp T) error {
