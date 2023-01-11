@@ -6,4 +6,4 @@ go mod init main || continue
 go mod tidy || continue
 go build .
 
-./go-deployer $1 &
+./go-deployer &
