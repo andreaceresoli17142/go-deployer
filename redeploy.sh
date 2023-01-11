@@ -1,9 +1,8 @@
 #!/bin/bash
 
-killall -ew ./go-deployer || continue
-
 go mod init main || continue
 go mod tidy || continue
-go build .
+notify-send $(go build . || notify-send("error compiling go-deployer, aborting deployment"); exit 1 ) 
 
-./go-deployer &
+# killall -ew ./go-deployer || continue
+# ./go-deployer &
