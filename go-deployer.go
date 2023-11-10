@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	defaultPolling = 10 // default 10 sec polling
+	defaultPolling = 600 // default 10 sec polling
 )
 
 type Repository struct {
@@ -52,7 +52,7 @@ func main() {
 	_, err := toml.DecodeFile(configFile, &config)
 	if err != nil {
 		fmt.Println("Error reading config file:", err.Error())
-      os.Exit(1)
+		os.Exit(1)
 	}
 
 	var publicKeys *ssh.PublicKeys
@@ -66,15 +66,15 @@ func main() {
 
 	_, err = os.Stat(privateKeyFile)
 	if err != nil {
-      fmt.Printf("Error reading file \"%s\": %s\n", privateKeyFile, err.Error())
-      os.Exit(1)
+		fmt.Printf("Error reading file \"%s\": %s\n", privateKeyFile, err.Error())
+		os.Exit(1)
 	}
 
 	publicKeys, err = ssh.NewPublicKeysFromFile("git", privateKeyFile, password)
 
 	if err != nil {
 		fmt.Printf("Error generating publickeys: %s\n", err.Error())
-      os.Exit(1)
+		os.Exit(1)
 	}
 
 	var repositories []Repository
